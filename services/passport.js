@@ -1,6 +1,24 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const mongoose = require('mongoose');
 const keys = require('../config/keys');
+
+//one arguments means we are fetching something from mongoose
+const User = mongoose.model('users');
+
+//user is whatever we pulled out of the database
+passport.serializeUser((user, done) => {
+  //user.id is the identifying piece of info that identifies user in follow-up requests
+  //user.id is the id auto-created by MONGODB
+  //every user will HAVE THIS..not every user will have google profile.id or whatever....
+  done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+  User.findById(id).then(user => {
+    done(null, user);
+  });
+});
 
 passport.use(
   new GoogleStrategy(
@@ -13,9 +31,21 @@ passport.use(
     //callback function -> when user gets back home, it brings this accessToken
     //here is our chance to get user info and create new user in our database
     (accessToken, refreshToken, profile, done) => {
-      console.log('accessToken', accessToken);
-      console.log('refreshToken', refreshToken);
-      console.log('profile: ', profile);
+      //query returns a promise!
+      User.findOne({ googleId: profile.id }).then(existingUser => {
+        if (existingUser) {
+          //we already have a record with the given profile ID
+          //null means we are all good! then return the user file!
+          done(null, existingUser);
+        } else {
+          //we dont have a user record with this ID, make a new record!
+          //creates one new record of a user that exists in node APT only
+          //.save persists this to mongo database
+          new User({ googleId: profile.id })
+            .save()
+            .then(user => done(null, user));
+        }
+      });
     }
   )
 );
