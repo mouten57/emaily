@@ -26,7 +26,8 @@ passport.use(
       clientID: keys.googleClientID,
       clientSecret: keys.googleClientSecret,
       //route user is sent to after they grant permissions to google
-      callbackURL: '/auth/google/callback'
+      callbackURL: '/auth/google/callback',
+      proxy: true
     },
     //callback function -> when user gets back home, it brings this accessToken
     //here is our chance to get user info and create new user in our database
