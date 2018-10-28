@@ -10,3 +10,4 @@ This is an application to allow business owners to obtain feeback, FAST. Users c
 - Style with Materialize
 
 [live link](https://powerful-earth-60772.herokuapp.com/)
+![screenshot of app](https://imgur.com/a/3y2hrs1)
