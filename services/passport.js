@@ -31,22 +31,20 @@ passport.use(
     },
     //callback function -> when user gets back home, it brings this accessToken
     //here is our chance to get user info and create new user in our database
-    (accessToken, refreshToken, profile, done) => {
+    async (accessToken, refreshToken, profile, done) => {
       //query returns a promise!
-      User.findOne({ googleId: profile.id }).then(existingUser => {
-        if (existingUser) {
-          //we already have a record with the given profile ID
-          //null means we are all good! then return the user file!
-          done(null, existingUser);
-        } else {
-          //we dont have a user record with this ID, make a new record!
-          //creates one new record of a user that exists in node APT only
-          //.save persists this to mongo database
-          new User({ googleId: profile.id })
-            .save()
-            .then(user => done(null, user));
-        }
-      });
+      const existingUser = await User.findOne({ googleId: profile.id });
+      if (existingUser) {
+        //we already have a record with the given profile ID
+        //null means we are all good! then return the user file!
+        return done(null, existingUser);
+      }
+
+      //we dont have a user record with this ID, make a new record!
+      //creates one new record of a user that exists in node APT only
+      //.save persists this to mongo database
+      const user = await new User({ googleId: profile.id }).save();
+      done(null, user);
     }
   )
 );
