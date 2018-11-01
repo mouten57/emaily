@@ -8,6 +8,7 @@ const keys = require('./config/keys');
 //just requiring that it gets executed
 //important to call model first, before I try to run passport
 require('./models/User');
+require('./models/Survey');
 require('./services/passport');
 
 mongoose.connect(keys.mongoURI);
@@ -26,6 +27,7 @@ app.use(passport.session());
 
 require('./routes/authRoutes')(app);
 require('./routes/billingRoutes')(app);
+require('./routes/surveyRoutes')(app);
 
 //express to behave in production
 if (process.env.NODE_ENV === 'production') {
