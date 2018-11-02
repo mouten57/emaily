@@ -22,5 +22,6 @@ module.exports = app => {
     //How do we get our class in here?
 
     const mailer = new Mailer(survey, surveyTemplate(survey));
+    mailer.send();
   });
 };
