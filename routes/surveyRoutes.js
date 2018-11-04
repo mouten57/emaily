@@ -7,7 +7,11 @@ const surveyTemplate = require('../services/emailTemplates/surveyTemplate');
 const Survey = mongoose.model('surveys');
 
 module.exports = app => {
-  app.post('/api/surveys', requireLogin, requireCredits, (req, res) => {
+  app.get('/api/surveys/thanks', (req, res) => {
+    res.send('Thanks for voting!');
+  });
+
+  app.post('/api/surveys', requireLogin, requireCredits, async (req, res) => {
     const { title, subject, body, recipients } = req.body;
 
     const survey = new Survey({
@@ -19,9 +23,22 @@ module.exports = app => {
       dateSent: Date.now()
     });
     //Great place to send an email
-    //How do we get our class in here?
-
+    //How do we get our class in here? use 'new' keyword
     const mailer = new Mailer(survey, surveyTemplate(survey));
-    mailer.send();
+    try {
+      await mailer.send();
+
+      //now we need to save our survey
+      await survey.save();
+
+      //take away 1 credit from user, then save user
+      req.user.credits -= 1;
+      const user = await req.user.save();
+
+      //send back updated user model, allows our header to auto-update
+      res.send(user);
+    } catch (err) {
+      res.status(422).send(err);
+    }
   });
 };
